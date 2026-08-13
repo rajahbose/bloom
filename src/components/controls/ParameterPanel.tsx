@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Sliders, Dices, Layers, Palette, Shield, Ruler } from 'lucide-react';
-import { FoliageType, PlantConfig } from '@/lib/types/plant';
+import { Sliders, Dices, Layers, Palette, Grid, Sprout } from 'lucide-react';
+import { FoliageType, GrowthProfileType, PlantConfig } from '@/lib/types/plant';
 import { PALETTES } from '@/lib/engine/palettes';
 
 interface ParameterPanelProps {
@@ -23,19 +23,19 @@ export const ParameterPanel: React.FC<ParameterPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden">
+    <div className="flex flex-col h-full bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden select-none">
       {/* Header */}
       <div className="p-3 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Sliders className="w-4 h-4 text-emerald-400" />
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)]">
-            Parametric Fine-Tuning
+            Botanical Growth Parameters
           </h2>
         </div>
         <button
           onClick={randomizeSeed}
           className="px-2.5 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs flex items-center space-x-1.5 transition-all"
-          title="Generate Random Botanical Variation"
+          title="Generate Random Variation"
         >
           <Dices className="w-3.5 h-3.5" />
           <span>New Seed</span>
@@ -44,226 +44,308 @@ export const ParameterPanel: React.FC<ParameterPanelProps> = ({
 
       {/* Control Groups */}
       <div className="flex-1 p-4 overflow-y-auto space-y-6 text-xs">
-        {/* Group 1: Fractal Branching Geometry */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
-            <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
-              1. Branching Geometry
-            </span>
-            <span className="text-[10px] text-[var(--text-muted)] font-mono">
-              Seed: #{plantConfig.seed}
-            </span>
-          </div>
+        {/* Growth Profile Selector */}
+        <div className="space-y-2 bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/20">
+          <label className="block text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            1. Core Growth Profile
+          </label>
+          <select
+            value={plantConfig.growthProfile || 'decurrent_canopy'}
+            onChange={(e) => updateConfig('growthProfile', e.target.value as GrowthProfileType)}
+            className="w-full bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-emerald-500"
+          >
+            <option value="radial_rosette">1. Radial Rosette (Yucca / Agave)</option>
+            <option value="excurrent_tower">2. Excurrent Tower (Conifer / Pine)</option>
+            <option value="decurrent_canopy">3. Decurrent Canopy (Maple / Oak)</option>
+            <option value="columnar_spire">4. Columnar Spire (Cypress / Poplar)</option>
+            <option value="basal_fountain">5. Basal Fountain (Ornamental Grass)</option>
+          </select>
+        </div>
 
-          {/* Recursion Depth */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Recursion Depth</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.maxDepth}</span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="7"
-              step="1"
-              value={plantConfig.maxDepth}
-              onChange={(e) => updateConfig('maxDepth', parseInt(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-
-          {/* Base Branching Angle */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Branch Angle (°)</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.baseAngle}°</span>
-            </div>
-            <input
-              type="range"
-              min="10"
-              max="75"
-              step="1"
-              value={plantConfig.baseAngle}
-              onChange={(e) => updateConfig('baseAngle', parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-
-          {/* Angle Randomness / Jitter */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Angle Randomness</label>
-              <span className="font-mono text-emerald-400 font-bold">{Math.round(plantConfig.angleJitter * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={plantConfig.angleJitter}
-              onChange={(e) => updateConfig('angleJitter', parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-
-          {/* Gravity Droop / Upright */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Gravity Bending (Droop vs Upright)</label>
-              <span className="font-mono text-emerald-400 font-bold">
-                {plantConfig.gravity < 0 ? `Weeping (${plantConfig.gravity})` : plantConfig.gravity > 0 ? `Upright (+${plantConfig.gravity})` : 'Neutral'}
+        {/* Profile-Specific Parameter Influences */}
+        {plantConfig.growthProfile === 'radial_rosette' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
+              <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
+                Radial Rosette Influences
               </span>
             </div>
-            <input
-              type="range"
-              min="-1"
-              max="1"
-              step="0.1"
-              value={plantConfig.gravity}
-              onChange={(e) => updateConfig('gravity', parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-        </div>
 
-        {/* Group 2: Trunk & Taper */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
-            <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
-              2. Trunk & Structure
-            </span>
-          </div>
-
-          {/* Trunk Length */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Trunk Height</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.trunkLength}px</span>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Sword Leaf Count</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.rosetteLeafCount || 36}</span>
+              </div>
+              <input
+                type="range"
+                min="12"
+                max="70"
+                step="2"
+                value={plantConfig.rosetteLeafCount || 36}
+                onChange={(e) => updateConfig('rosetteLeafCount', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
             </div>
-            <input
-              type="range"
-              min="60"
-              max="250"
-              step="5"
-              value={plantConfig.trunkLength}
-              onChange={(e) => updateConfig('trunkLength', parseInt(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
 
-          {/* Trunk Thickness */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Trunk Thickness</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.trunkThickness}px</span>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Leaf Length</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.rosetteLeafLength || 140}px</span>
+              </div>
+              <input
+                type="range"
+                min="40"
+                max="220"
+                step="5"
+                value={plantConfig.rosetteLeafLength || 140}
+                onChange={(e) => updateConfig('rosetteLeafLength', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
             </div>
-            <input
-              type="range"
-              min="3"
-              max="35"
-              step="1"
-              value={plantConfig.trunkThickness}
-              onChange={(e) => updateConfig('trunkThickness', parseInt(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-        </div>
 
-        {/* Group 3: Botanical Foliage */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
-            <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
-              3. Botanical Foliage
-            </span>
-          </div>
-
-          {/* Foliage Type */}
-          <div>
-            <label className="block text-[var(--text-secondary)] mb-1">Foliage Render Style</label>
-            <select
-              value={plantConfig.foliageType}
-              onChange={(e) => updateConfig('foliageType', e.target.value as FoliageType)}
-              className="w-full bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
-            >
-              <option value="deciduous">Deciduous Leaves</option>
-              <option value="conifer">Conifer / Pine Needles</option>
-              <option value="weeping">Weeping Tendrils</option>
-              <option value="palm">Palm Fronds</option>
-              <option value="broadleaf">Broadleaf Oval</option>
-              <option value="architectural_circle">Architectural Circles</option>
-              <option value="hatch">CAD Stipple Hatch</option>
-              <option value="none">No Foliage (Winter / Bare Branches)</option>
-            </select>
-          </div>
-
-          {/* Foliage Density */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Foliage Density</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.foliageDensity}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={plantConfig.foliageDensity}
-              onChange={(e) => updateConfig('foliageDensity', parseInt(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
-          </div>
-        </div>
-
-        {/* Group 4: CAD Line Weights & Aesthetics */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
-            <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
-              4. CAD Aesthetics & Annotations
-            </span>
-          </div>
-
-          {/* Palette Selector */}
-          <div>
-            <label className="block text-[var(--text-secondary)] mb-1">Color Palette</label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {Object.entries(PALETTES).map(([key, pal]) => (
-                <button
-                  key={key}
-                  onClick={() => updateConfig('colorPalette', key)}
-                  className={`p-2 rounded-lg border text-left transition-all flex items-center space-x-2 ${
-                    plantConfig.colorPalette === key
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
-                      : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)]'
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0 border border-white/20"
-                    style={{ backgroundColor: pal.foliagePrimary }}
-                  />
-                  <span className="truncate text-[10px] font-medium">{pal.name}</span>
-                </button>
-              ))}
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Rosette Layers</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.rosetteLayers || 3}</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value={plantConfig.rosetteLayers || 3}
+                onChange={(e) => updateConfig('rosetteLayers', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
             </div>
           </div>
+        )}
 
-          {/* Line Weight */}
-          <div>
-            <div className="flex justify-between mb-1">
-              <label className="text-[var(--text-secondary)]">Vector Line Weight</label>
-              <span className="font-mono text-emerald-400 font-bold">{plantConfig.lineWeight}x</span>
+        {plantConfig.growthProfile === 'excurrent_tower' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
+              <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
+                Excurrent Conical Influences
+              </span>
             </div>
-            <input
-              type="range"
-              min="0.5"
-              max="4.0"
-              step="0.1"
-              value={plantConfig.lineWeight}
-              onChange={(e) => updateConfig('lineWeight', parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
-            />
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Conical Envelope Width</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.spireWidth || 140}px</span>
+              </div>
+              <input
+                type="range"
+                min="60"
+                max="260"
+                step="5"
+                value={plantConfig.spireWidth || 140}
+                onChange={(e) => updateConfig('spireWidth', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Trunk Tower Height</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.trunkLength || 160}px</span>
+              </div>
+              <input
+                type="range"
+                min="80"
+                max="240"
+                step="5"
+                value={plantConfig.trunkLength || 160}
+                onChange={(e) => updateConfig('trunkLength', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
+
+        {plantConfig.growthProfile === 'decurrent_canopy' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
+              <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
+                Decurrent Canopy Branching
+              </span>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Recursion Depth</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.maxDepth}</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="7"
+                step="1"
+                value={plantConfig.maxDepth}
+                onChange={(e) => updateConfig('maxDepth', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Branch Angle (°)</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.baseAngle}°</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="75"
+                step="1"
+                value={plantConfig.baseAngle}
+                onChange={(e) => updateConfig('baseAngle', parseFloat(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Gravity Bending</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.gravity}</span>
+              </div>
+              <input
+                type="range"
+                min="-1"
+                max="1"
+                step="0.1"
+                value={plantConfig.gravity}
+                onChange={(e) => updateConfig('gravity', parseFloat(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
+
+        {plantConfig.growthProfile === 'columnar_spire' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
+              <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
+                Columnar Spire Envelope
+              </span>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Capsule Spire Width</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.spireWidth || 60}px</span>
+              </div>
+              <input
+                type="range"
+                min="30"
+                max="120"
+                step="2"
+                value={plantConfig.spireWidth || 60}
+                onChange={(e) => updateConfig('spireWidth', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Steep Elevation Angle (°)</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.spireBranchAngle || 78}°</span>
+              </div>
+              <input
+                type="range"
+                min="60"
+                max="88"
+                step="1"
+                value={plantConfig.spireBranchAngle || 78}
+                onChange={(e) => updateConfig('spireBranchAngle', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
+
+        {plantConfig.growthProfile === 'basal_fountain' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-1">
+              <span className="font-bold text-[var(--text-primary)] uppercase tracking-wider text-[10px]">
+                Basal Fountain Curves
+              </span>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Blade Count</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.fountainBladeCount || 70}</span>
+              </div>
+              <input
+                type="range"
+                min="20"
+                max="150"
+                step="5"
+                value={plantConfig.fountainBladeCount || 70}
+                onChange={(e) => updateConfig('fountainBladeCount', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Arch Curvature Factor</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.fountainArchFactor || 0.8}</span>
+              </div>
+              <input
+                type="range"
+                min="0.2"
+                max="2.0"
+                step="0.1"
+                value={plantConfig.fountainArchFactor || 0.8}
+                onChange={(e) => updateConfig('fountainArchFactor', parseFloat(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="text-[var(--text-secondary)]">Blade Length</label>
+                <span className="font-mono text-emerald-400 font-bold">{plantConfig.fountainBladeLength || 150}px</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="240"
+                step="5"
+                value={plantConfig.fountainBladeLength || 150}
+                onChange={(e) => updateConfig('fountainBladeLength', parseInt(e.target.value))}
+                className="w-full accent-emerald-500 bg-[var(--bg-card)] rounded h-1.5 cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Color Palette & CAD Aesthetics */}
+        <div className="space-y-3 pt-2 border-t border-[var(--border-color)]">
+          <label className="block text-[var(--text-secondary)] mb-1 font-bold uppercase tracking-wider text-[10px]">
+            Color Palette & CAD Annotations
+          </label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {Object.entries(PALETTES).map(([key, pal]) => (
+              <button
+                key={key}
+                onClick={() => updateConfig('colorPalette', key)}
+                className={`p-2 rounded-lg border text-left transition-all flex items-center space-x-2 ${
+                  plantConfig.colorPalette === key
+                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+                    : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <span
+                  className="w-3 h-3 rounded-full shrink-0 border border-white/20"
+                  style={{ backgroundColor: pal.foliagePrimary }}
+                />
+                <span className="truncate text-[10px] font-medium">{pal.name}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Show Dimensions & Grid Toggles */}
           <div className="flex items-center justify-between pt-2">
             <label className="text-[var(--text-secondary)] flex items-center space-x-2 cursor-pointer">
               <input

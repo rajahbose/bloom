@@ -1,4 +1,4 @@
-import { PlantConfig } from '../types/plant';
+import { PlantConfig, GrowthProfileType } from '../types/plant';
 import { PLANT_PRESETS } from './presets';
 
 export interface AIParseResult {
@@ -15,100 +15,80 @@ export function parseNaturalLanguagePrompt(
   const newConfig: Partial<PlantConfig> = { ...currentConfig };
   const changes: string[] = [];
 
-  // Check matching presets
-  if (promptLower.includes('maple') || promptLower.includes('japanese')) {
-    const preset = PLANT_PRESETS.find((p) => p.id === 'japanese_maple');
+  // Growth Profile Matching
+  if (promptLower.includes('agave') || promptLower.includes('yucca') || promptLower.includes('rosette') || promptLower.includes('aloe') || promptLower.includes('succulent')) {
+    const preset = PLANT_PRESETS.find((p) => p.id === 'agave_rosette');
     if (preset) {
       return {
         config: { ...preset.config, seed: Math.floor(Math.random() * 100000) },
-        explanation: `Generated a delicate Japanese Maple (*Acer palmatum*) with widespread branching, weeping gravity (-0.4), and a crimson foliage palette.`,
-        suggestedPresetId: 'japanese_maple',
+        explanation: `Switched to **Radial Rosette** growth profile (*Agave Americana*). Generated rotational tapering sword paths around a central anchor point.`,
+        suggestedPresetId: 'agave_rosette',
       };
     }
   }
 
-  if (promptLower.includes('cypress') || promptLower.includes('columnar') || promptLower.includes('poplar')) {
-    const preset = PLANT_PRESETS.find((p) => p.id === 'italian_cypress');
+  if (promptLower.includes('conifer') || promptLower.includes('pine') || promptLower.includes('spruce') || promptLower.includes('fir') || promptLower.includes('tower')) {
+    const preset = PLANT_PRESETS.find((p) => p.id === 'scots_pine_tower');
     if (preset) {
       return {
         config: { ...preset.config, seed: Math.floor(Math.random() * 100000) },
-        explanation: `Configured a tall Italian Cypress (*Cupressus sempervirens*) with narrow branch angles (18°), high upright gravity bias, and dense evergreen foliage.`,
-        suggestedPresetId: 'italian_cypress',
+        explanation: `Switched to **Excurrent Tower** growth profile (*Scots Pine*). Configured monopodial trunk axis with lateral branches clipped by a conical envelope.`,
+        suggestedPresetId: 'scots_pine_tower',
       };
     }
   }
 
-  if (promptLower.includes('willow') || promptLower.includes('weeping')) {
-    const preset = PLANT_PRESETS.find((p) => p.id === 'weeping_willow');
+  if (promptLower.includes('cypress') || promptLower.includes('spire') || promptLower.includes('poplar') || promptLower.includes('columnar')) {
+    const preset = PLANT_PRESETS.find((p) => p.id === 'italian_cypress_spire');
     if (preset) {
       return {
         config: { ...preset.config, seed: Math.floor(Math.random() * 100000) },
-        explanation: `Designed a Weeping Willow (*Salix babylonica*) with heavy drooping gravity (-0.9), long tendrils, and cascading foliage branches.`,
-        suggestedPresetId: 'weeping_willow',
+        explanation: `Switched to **Columnar Spire** growth profile (*Italian Cypress*). Configured steep lateral vectors (82°) constrained within a narrow capsule shape.`,
+        suggestedPresetId: 'italian_cypress_spire',
       };
     }
   }
 
-  if (promptLower.includes('pine') || promptLower.includes('conifer') || promptLower.includes('fir')) {
-    const preset = PLANT_PRESETS.find((p) => p.id === 'scots_pine');
+  if (promptLower.includes('grass') || promptLower.includes('fountain') || promptLower.includes('fern') || promptLower.includes('bamboo') || promptLower.includes('basal')) {
+    const preset = PLANT_PRESETS.find((p) => p.id === 'fountain_grass_basal');
     if (preset) {
       return {
         config: { ...preset.config, seed: Math.floor(Math.random() * 100000) },
-        explanation: `Adjusted parameters for a Scots Pine (*Pinus sylvestris*) with needle bundles, thick trunk tapering, and rugged dark green pine foliage.`,
-        suggestedPresetId: 'scots_pine',
+        explanation: `Switched to **Basal Fountain** growth profile (*Ornamental Fountain Grass*). Generated arched Bezier blade curves from a shared basal anchor with plumose seed heads.`,
+        suggestedPresetId: 'fountain_grass_basal',
       };
     }
   }
 
-  if (promptLower.includes('architectural') || promptLower.includes('elevation') || promptLower.includes('silhouette') || promptLower.includes('cad')) {
-    const preset = PLANT_PRESETS.find((p) => p.id === 'architectural_elevation');
+  if (promptLower.includes('maple') || promptLower.includes('oak') || promptLower.includes('canopy') || promptLower.includes('decurrent') || promptLower.includes('tree')) {
+    const preset = PLANT_PRESETS.find((p) => p.id === 'japanese_maple_canopy');
     if (preset) {
       return {
         config: { ...preset.config, seed: Math.floor(Math.random() * 100000) },
-        explanation: `Applied Architectural Elevation Symbol style with crisp line art geometry, circle cluster nodes, and clean monochrome palette.`,
-        suggestedPresetId: 'architectural_elevation',
+        explanation: `Configured **Decurrent Canopy** growth profile (*Japanese Maple*). Generated sympodial spreading branches with broadleaf foliage clusters.`,
+        suggestedPresetId: 'japanese_maple_canopy',
       };
     }
   }
 
-  // General Parametric Adjustments
-  if (promptLower.includes('denser') || promptLower.includes('bushy') || promptLower.includes('thick')) {
+  // Parameter adjustments
+  if (promptLower.includes('denser') || promptLower.includes('thick')) {
     newConfig.foliageDensity = Math.min(100, (currentConfig.foliageDensity || 50) + 30);
-    changes.push(`increased foliage density to ${newConfig.foliageDensity}%`);
+    newConfig.rosetteLeafCount = Math.min(70, (currentConfig.rosetteLeafCount || 36) + 15);
+    newConfig.fountainBladeCount = Math.min(140, (currentConfig.fountainBladeCount || 70) + 30);
+    changes.push(`increased foliage and element density`);
   }
 
-  if (promptLower.includes('sparse') || promptLower.includes('bare') || promptLower.includes('delicate') || promptLower.includes('thin')) {
-    newConfig.foliageDensity = Math.max(10, (currentConfig.foliageDensity || 50) - 25);
-    newConfig.lineWeight = 1.0;
-    changes.push(`reduced foliage density to ${newConfig.foliageDensity}% and refined line weight`);
-  }
-
-  if (promptLower.includes('taller') || promptLower.includes('high')) {
-    newConfig.trunkLength = Math.min(240, (currentConfig.trunkLength || 140) + 40);
-    changes.push(`increased main trunk length to ${newConfig.trunkLength}px`);
-  }
-
-  if (promptLower.includes('wider') || promptLower.includes('spread') || promptLower.includes('broad')) {
-    newConfig.baseAngle = Math.min(70, (currentConfig.baseAngle || 35) + 15);
-    changes.push(`expanded branch angle spread to ${newConfig.baseAngle}°`);
-  }
-
-  if (promptLower.includes('red') || promptLower.includes('autumn') || promptLower.includes('crimson')) {
+  if (promptLower.includes('red') || promptLower.includes('crimson') || promptLower.includes('autumn')) {
     newConfig.colorPalette = promptLower.includes('autumn') ? 'autumn_gold' : 'maple_red';
-    changes.push(`applied ${newConfig.colorPalette} palette`);
+    changes.push(`applied ${newConfig.colorPalette} color palette`);
   }
 
-  if (promptLower.includes('blueprint') || promptLower.includes('blue')) {
-    newConfig.colorPalette = 'blueprint';
-    changes.push('switched to Architectural Blueprint theme');
-  }
-
-  // Random seed change for variation
   newConfig.seed = Math.floor(Math.random() * 100000);
 
   const explanation = changes.length > 0
-    ? `Updated plant configuration: ${changes.join(', ')}.`
-    : `Customized plant geometry with new random seed (${newConfig.seed}) and tuned structural parameters.`;
+    ? `Updated plant model: ${changes.join(', ')}.`
+    : `Customized plant geometry with new random seed (${newConfig.seed}).`;
 
   return {
     config: newConfig,

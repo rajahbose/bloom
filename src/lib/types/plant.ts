@@ -1,3 +1,10 @@
+export type GrowthProfileType = 
+  | 'radial_rosette'  // Yucca / Agave / Succulents
+  | 'excurrent_tower' // Conifers / Pines / Firs
+  | 'decurrent_canopy'// Maples / Oaks / Broadleaf trees
+  | 'columnar_spire'  // Poplars / Cypress / Columnar Junipers
+  | 'basal_fountain';  // Ornamental Grasses / Ferns / Bamboo
+
 export type FoliageType = 
   | 'deciduous' 
   | 'conifer' 
@@ -6,6 +13,7 @@ export type FoliageType =
   | 'broadleaf' 
   | 'architectural_circle' 
   | 'hatch' 
+  | 'blade'
   | 'none';
 
 export type ArchitecturalStyle = 
@@ -31,6 +39,9 @@ export interface PlantConfig {
   name: string;
   description: string;
   seed: number;
+  growthProfile: GrowthProfileType;
+  
+  // Decurrent Canopy & Excurrent Tower Parameters
   maxDepth: number; // 1 to 7
   baseAngle: number; // Branch angle spread in degrees (10 - 75)
   angleJitter: number; // Randomness in angle (0 - 1)
@@ -38,8 +49,26 @@ export interface PlantConfig {
   taperRatio: number; // Thickness reduction (0.5 - 0.95)
   trunkLength: number; // Base trunk length (60 - 250)
   trunkThickness: number; // Base trunk width (3 - 35)
-  gravity: number; // Bending force: negative = droop/weeping, positive = upright (-1 to 1)
+  gravity: number; // Bending force (-1 to 1)
   splitsPerNode: number; // 2 or 3 branches per node
+
+  // Radial Rosette Influence Parameters
+  rosetteLeafCount: number; // 12 - 70
+  rosetteLeafLength: number; // 40 - 220
+  rosetteCurl: number; // Curvature factor (-1 to 1)
+  rosetteLayers: number; // Concentric rings (1 - 5)
+
+  // Columnar Spire Influence Parameters
+  spireWidth: number; // Capsule width constraint (20 - 90)
+  spireBranchAngle: number; // Steep elevation angle (60 - 88)
+
+  // Basal Fountain Influence Parameters
+  fountainBladeCount: number; // 20 - 150
+  fountainArchFactor: number; // Arch curvature (0.2 - 2.0)
+  fountainBladeLength: number; // 50 - 240
+  fountainSeedHeadDensity: number; // 0 - 100
+
+  // General Foliage & CAD Appearance
   foliageType: FoliageType;
   foliageDensity: number; // 0 - 100
   foliageSize: number; // 3 - 25
@@ -71,11 +100,12 @@ export interface RenderedFoliage {
   type: FoliageType;
   color: string;
   opacity: number;
+  pathData?: string; // Optional custom SVG path data for blades/swords
 }
 
 export interface PlantPreset {
   id: string;
   name: string;
-  category: 'Trees' | 'Palms & Exotic' | 'Shrubs & Bonsai' | 'Architectural Elevation';
+  category: 'Rosette & Succulents' | 'Conifers' | 'Deciduous Trees' | 'Spires' | 'Grasses & Ferns';
   config: Partial<PlantConfig>;
 }
