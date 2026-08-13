@@ -1,77 +1,87 @@
-import { PlantSymbol, PlantRenderResult } from './PlantSymbol';
+import { PlantSymbol, PlantRenderResult, CustomPathEntity } from './PlantSymbol';
 import { RenderedBranch, RenderedFoliage } from '../../types/plant';
-import { generateFoliageForBranch } from '../foliage';
 
 /**
- * Growth Profile 4: Columnar Spire (e.g., Lombardy Poplar, Italian Cypress, Columnar Juniper)
- * Math: Compressed vertical logic with short, high-angle lateral vectors tightly constrained in a narrow capsule shape.
+ * Growth Profile 4: Columnar Spire (Engine 2.0)
+ * Realistic Italian Cypress / Poplar spire with capsule contour envelope and dense vertical foliage layering.
  */
 export class ColumnarSpire extends PlantSymbol {
   generateGeometry(view: 'front' | 'side' | 'plan' = 'front'): PlantRenderResult {
     const branches: RenderedBranch[] = [];
     const foliage: RenderedFoliage[] = [];
+    const customPaths: CustomPathEntity[] = [];
 
-    const H = this.config.trunkLength * 1.4;
-    const maxCapsuleWidth = (this.config.spireWidth || 60) / 2;
-    const elevationAngleRad = ((this.config.spireBranchAngle || 78) * Math.PI) / 180;
-    const nodeCount = Math.floor(18 + (this.config.maxDepth || 5) * 4);
+    const H = this.config.trunkLength * 1.45;
+    const maxCapsuleWidth = (this.config.spireWidth || 65) / 2;
+    const elevationAngleRad = ((this.config.spireBranchAngle || 80) * Math.PI) / 180;
+    const nodeCount = Math.floor(22 + (this.config.maxDepth || 5) * 4);
+    const trunkThick = this.config.trunkThickness || 14;
 
     const trunkX = this.centerX;
-    const baseY = this.startY;
+    const baseY = view === 'plan' ? this.canvasHeight / 2 : this.startY;
     const topY = baseY - H;
 
     if (view === 'plan') {
-      // Top-down compact columnar circle plan view
-      const planRad = maxCapsuleWidth * 0.9;
-      const ringCount = 5;
+      // Top-Down Compact Columnar Plan View with Layered Foliage Rings
+      const planRad = maxCapsuleWidth * 0.95;
+      const ringCount = 6;
       for (let r = 1; r <= ringCount; r++) {
         const rad = (r / ringCount) * planRad;
-        const count = r * 6;
+        const count = r * 7;
         for (let i = 0; i < count; i++) {
-          const angle = (i / count) * Math.PI * 2 + this.prng.jitter(0.1);
+          const angle = (i / count) * Math.PI * 2 + this.prng.jitter(0.08);
           const endX = trunkX + Math.cos(angle) * rad;
-          const endY = (this.canvasHeight / 2) + Math.sin(angle) * rad;
+          const endY = baseY + Math.sin(angle) * rad;
 
           branches.push({
             id: `spire-plan-${r}-${i}`,
             x1: trunkX,
-            y1: this.canvasHeight / 2,
+            y1: baseY,
             x2: endX,
             y2: endY,
-            thickness: 1.5,
+            thickness: 1.2,
             depth: r,
             angle,
           });
 
           this.updateBounds(endX, endY);
 
-          const fol = generateFoliageForBranch(
-            endX,
-            endY,
+          foliage.push({
+            id: `spire-plan-fol-${r}-${i}`,
+            x: endX,
+            y: endY,
+            size: this.config.foliageSize * 0.7,
             angle,
-            r,
-            ringCount,
-            this.config.foliageType || 'conifer',
-            this.config.foliageDensity,
-            this.config.foliageSize * 0.7,
-            this.config.foliageOpacity,
-            this.prng,
-            this.palette.foliagePrimary,
-            this.palette.foliageSecondary
-          );
-          foliage.push(...fol);
+            type: 'conifer',
+            color: this.prng.next() > 0.45 ? this.palette.foliagePrimary : this.palette.foliageSecondary,
+            opacity: 0.9,
+          });
         }
       }
+
+      customPaths.push({
+        id: 'plan-center-spire',
+        pathData: `M ${trunkX - 6} ${baseY} L ${trunkX + 6} ${baseY} M ${trunkX} ${baseY - 6} L ${trunkX} ${baseY + 6}`,
+        stroke: this.palette.outline,
+        strokeWidth: 1.2,
+        layer: 'details',
+      });
     } else {
-      // Front & Side Elevation: Central trunk + Capsule-constrained steep branches
-      // 1. Central Spire Trunk Axis
+      // Front & Side Elevation: Central Trunk + Dense Interlocking Steep Boughs within Capsule Envelope
+      
+      // 1. Root Buttress Flares & Bark
+      const rootFlares = this.generateRootFlares(trunkX, baseY, trunkThick * 0.8);
+      const barkFissures = this.generateBarkFissures(trunkX, baseY, 40, trunkThick * 0.8);
+      customPaths.push(...rootFlares, ...barkFissures);
+
+      // 2. Central Spire Trunk Axis
       branches.push({
         id: 'spire-trunk',
         x1: trunkX,
         y1: baseY,
         x2: trunkX,
         y2: topY,
-        thickness: this.config.trunkThickness * 0.7,
+        thickness: trunkThick * 0.75,
         depth: 1,
         angle: -Math.PI / 2,
       });
@@ -79,26 +89,26 @@ export class ColumnarSpire extends PlantSymbol {
       this.updateBounds(trunkX, baseY);
       this.updateBounds(trunkX, topY);
 
-      // 2. High-Steepness Lateral Vectors constrained in Capsule Envelope
-      const nodeStep = (H * 0.85) / nodeCount;
+      // 3. Steep Lateral Boughs within Capsule Envelope
+      const nodeStep = (H * 0.88) / nodeCount;
       const midY = baseY - H / 2;
 
       for (let i = 0; i < nodeCount; i++) {
-        const nodeY = baseY - 15 - i * nodeStep;
+        const nodeY = baseY - 18 - i * nodeStep;
         
-        // Capsule width envelope math: W(y) = Wmax * sqrt(1 - 4((y - ymid)/H)^2)
+        // Elliptical / Capsule Envelope Formula
         const normalizedY = (nodeY - midY) / (H / 2);
-        const capsuleFactor = Math.sqrt(Math.max(0.05, 1 - Math.pow(normalizedY, 2)));
+        const capsuleFactor = Math.sqrt(Math.max(0.04, 1 - Math.pow(normalizedY, 2)));
         const allowedWidth = maxCapsuleWidth * capsuleFactor;
 
-        // Pair of steep left and right branches
         for (const side of [-1, 1]) {
-          const branchLen = allowedWidth * (0.8 + this.prng.next() * 0.35);
-          
-          // Steep upward vector (elevationAngleRad pointing almost vertical)
+          const branchLen = allowedWidth * (0.84 + this.prng.next() * 0.32);
           const angle = -Math.PI / 2 + side * (Math.PI / 2 - elevationAngleRad);
           const endX = trunkX + side * Math.cos(angle) * branchLen;
           const endY = nodeY + Math.sin(angle) * branchLen;
+
+          const cpX = (trunkX + endX) / 2 + side * 2;
+          const cpY = (nodeY + endY) / 2 - 3;
 
           branches.push({
             id: `spire-node-${i}-${side}`,
@@ -106,55 +116,37 @@ export class ColumnarSpire extends PlantSymbol {
             y1: nodeY,
             x2: endX,
             y2: endY,
-            thickness: Math.max(0.8, (1 - i / nodeCount) * 4),
+            cpX,
+            cpY,
+            thickness: Math.max(0.8, (1 - i / nodeCount) * 3.5),
             depth: 2,
             angle,
           });
 
           this.updateBounds(endX, endY);
 
-          // Sub-vector branchlets
-          const subEndX = endX + side * 5;
-          const subEndY = endY - 12;
-
-          branches.push({
-            id: `spire-sub-${i}-${side}`,
-            x1: endX,
-            y1: endY,
-            x2: subEndX,
-            y2: subEndY,
-            thickness: 0.8,
-            depth: 3,
+          // Dense foliage clusters along the spire outer silhouette
+          foliage.push({
+            id: `spire-fol-${i}-${side}`,
+            x: endX + side * 2,
+            y: endY - 6,
+            size: this.config.foliageSize * (0.7 + this.prng.next() * 0.4),
             angle,
+            type: 'conifer',
+            color: this.prng.next() > 0.4 ? this.palette.foliagePrimary : this.palette.foliageSecondary,
+            opacity: this.config.foliageOpacity || 0.9,
           });
-
-          // Foliage stippling along spire boundary
-          const fol = generateFoliageForBranch(
-            subEndX,
-            subEndY,
-            angle,
-            3,
-            3,
-            this.config.foliageType || 'conifer',
-            this.config.foliageDensity,
-            this.config.foliageSize * 0.75,
-            this.config.foliageOpacity,
-            this.prng,
-            this.palette.foliagePrimary,
-            this.palette.foliageSecondary
-          );
-          foliage.push(...fol);
         }
       }
     }
 
     const bounds = this.getCalculatedBounds();
-    const svgContent = this.buildSVGContent(branches, foliage, [], bounds, view);
+    const svgContent = this.buildSVGContent(branches, foliage, customPaths, bounds, view);
 
     return {
       branches,
       foliage,
-      customPaths: [],
+      customPaths,
       bounds,
       svgContent,
     };

@@ -3,7 +3,7 @@ export type GrowthProfileType =
   | 'excurrent_tower' // Conifers / Pines / Firs
   | 'decurrent_canopy'// Maples / Oaks / Broadleaf trees
   | 'columnar_spire'  // Poplars / Cypress / Columnar Junipers
-  | 'basal_fountain';  // Ornamental Grasses / Ferns / Bamboo
+  | 'basal_fountain';  // Ornamental Grasses / Ferns / Bamboo / Palms
 
 export type FoliageType = 
   | 'deciduous' 
@@ -14,7 +14,14 @@ export type FoliageType =
   | 'architectural_circle' 
   | 'hatch' 
   | 'blade'
+  | 'blossom'
   | 'none';
+
+export type RenderTechnique = 
+  | 'botanical_vector'    // Rich layered multi-tone botanical vector
+  | 'architectural_ink'   // Hand-drafted elevation ink with stipple & hatch
+  | 'blueprint'          // Technical cyan CAD drafting with precision lines
+  | 'watercolor_wash';   // Soft watercolor translucent wash with crisp contour
 
 export type ArchitecturalStyle = 
   | 'vector' 
@@ -27,9 +34,14 @@ export type ViewMode = 'front' | 'side' | 'plan' | 'dual';
 export interface ColorPalette {
   name: string;
   trunk: string;
+  trunkDark: string;
+  trunkLight: string;
   branches: string;
   foliagePrimary: string;
   foliageSecondary: string;
+  foliageHighlight: string;
+  foliageShadow: string;
+  accent: string;
   outline: string;
   bg: string;
 }
@@ -40,15 +52,22 @@ export interface PlantConfig {
   description: string;
   seed: number;
   growthProfile: GrowthProfileType;
+  renderTechnique: RenderTechnique;
   
+  // Organic Trunk & Structural Morphology
+  trunkLength: number; // Base trunk length (60 - 260)
+  trunkThickness: number; // Base trunk width (3 - 45)
+  rootFlare: number; // Buttress root flare spread at base (0 to 1.5)
+  barkFissures: number; // Density of organic bark line texturing (0 to 1)
+  windDrift: number; // Organic wind tilt / asymmetry lean (-1 to 1)
+  asymmetry: number; // Natural biological randomness (0 to 1)
+
   // Decurrent Canopy & Excurrent Tower Parameters
-  maxDepth: number; // 1 to 7
+  maxDepth: number; // Recursion depth (1 to 7)
   baseAngle: number; // Branch angle spread in degrees (10 - 75)
   angleJitter: number; // Randomness in angle (0 - 1)
   lengthRatio: number; // Branch length reduction (0.5 - 0.88)
   taperRatio: number; // Thickness reduction (0.5 - 0.95)
-  trunkLength: number; // Base trunk length (60 - 250)
-  trunkThickness: number; // Base trunk width (3 - 35)
   gravity: number; // Bending force (-1 to 1)
   splitsPerNode: number; // 2 or 3 branches per node
 
@@ -59,7 +78,7 @@ export interface PlantConfig {
   rosetteLayers: number; // Concentric rings (1 - 5)
 
   // Columnar Spire Influence Parameters
-  spireWidth: number; // Capsule width constraint (20 - 90)
+  spireWidth: number; // Capsule width constraint (20 - 120)
   spireBranchAngle: number; // Steep elevation angle (60 - 88)
 
   // Basal Fountain Influence Parameters
@@ -68,14 +87,15 @@ export interface PlantConfig {
   fountainBladeLength: number; // 50 - 240
   fountainSeedHeadDensity: number; // 0 - 100
 
-  // General Foliage & CAD Appearance
+  // Foliage, Flowering & Aesthetics
   foliageType: FoliageType;
   foliageDensity: number; // 0 - 100
-  foliageSize: number; // 3 - 25
+  foliageSize: number; // 3 - 30
   foliageOpacity: number; // 0.1 - 1.0
+  blossomDensity: number; // Flowering blossom density (0 - 100)
+  blossomColor: string; // Hex color or palette key for blossoms
   colorPalette: string; // Palette ID
   lineWeight: number; // Stroke weight multiplier (0.5 - 4.0)
-  style: ArchitecturalStyle;
   showDimensions: boolean;
   showGrid: boolean;
 }
@@ -89,6 +109,8 @@ export interface RenderedBranch {
   thickness: number;
   depth: number;
   angle: number;
+  cpX?: number; // Quadratic Bezier control point X
+  cpY?: number; // Quadratic Bezier control point Y
 }
 
 export interface RenderedFoliage {
@@ -100,12 +122,12 @@ export interface RenderedFoliage {
   type: FoliageType;
   color: string;
   opacity: number;
-  pathData?: string; // Optional custom SVG path data for blades/swords
+  pathData?: string;
 }
 
 export interface PlantPreset {
   id: string;
   name: string;
-  category: 'Rosette & Succulents' | 'Conifers' | 'Deciduous Trees' | 'Spires' | 'Grasses & Ferns';
+  category: 'Rosette & Succulents' | 'Conifers' | 'Deciduous Trees' | 'Spires' | 'Grasses & Palms';
   config: Partial<PlantConfig>;
 }

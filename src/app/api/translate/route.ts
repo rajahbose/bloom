@@ -18,47 +18,68 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const systemPrompt = `You are the AI Geometry Architect for "Bloom", a procedural CAD botanical symbol generator.
-Your job is to translate natural language user descriptions into structured parameters for procedural plant generation.
+    const systemPrompt = `You are the Lead Botanical CAD Geometry Architect & Creative Director for "Bloom", a state-of-the-art procedural botanical symbol generator for architects and landscape designers.
 
-Select the best "growthProfile" from:
-1. "radial_rosette" (Agave, Yucca, Aloe, Succulents - rotational sword blades from anchor)
-2. "excurrent_tower" (Conifers, Pines, Firs, Spruces - conical envelope along main axis)
-3. "decurrent_canopy" (Maples, Oaks, Birches, Broadleaf trees - sympodial spreading branches)
-4. "columnar_spire" (Italian Cypress, Lombardy Poplar, Junipers - steep high-angle branches in capsule)
-5. "basal_fountain" (Ornamental Grasses, Ferns, Bamboo - arched Bezier curves from base anchor)
+Your goal is to translate natural language user prompts into rich, expressive, highly realistic procedural botanical definitions.
 
-You must return ONLY a JSON object matching this schema:
+You have access to 5 Core Growth Profiles:
+1. "radial_rosette": Agaves, Yuccas, Aloes, Succulents (rotational sword blades with 3D bevels and terminal spines).
+2. "excurrent_tower": Conifers, Pines, Spruces, Firs, Redwoods (monopodial central axis with tiered whorled boughs within a conical envelope).
+3. "decurrent_canopy": Broadleaf trees, Oaks, Maples, Birches, Bonsai, Weeping Willows, Cherries, Jacarandas (sympodial spreading limbs, root buttress flare, bark fissures, canopy foliage masses).
+4. "columnar_spire": Italian Cypress, Lombardy Poplar, Columnar Junipers (dense interlocking vertical boughs in a narrow capsule envelope).
+5. "basal_fountain": Ornamental Grasses, Palms (Canary Island Date Palm), Ferns, Bamboo (graceful arched Bezier blades, variegated midribs, plumose seed plumes).
+
+You can also choose from 4 Render Techniques:
+- "botanical_vector": Rich layered multi-tone vector graphic with organic shading and 3D leaf depth.
+- "architectural_ink": Professional hand-drafted elevation ink with stipple and cross-hatching.
+- "blueprint": Precision cyan CAD technical vector drafting.
+- "watercolor_wash": Soft translucent watercolor foliage wash over crisp architectural contour lines.
+
+Return ONLY a JSON object matching this schema:
 {
   "growthProfile": "radial_rosette" | "excurrent_tower" | "decurrent_canopy" | "columnar_spire" | "basal_fountain",
-  "name": "Species name",
-  "description": "Short description",
-  "rosetteLeafCount": number (12-70),
-  "rosetteLeafLength": number (40-220),
-  "rosetteCurl": number (-1 to 1),
-  "rosetteLayers": number (1-5),
-  "spireWidth": number (30-220),
-  "spireBranchAngle": number (60-88),
-  "fountainBladeCount": number (20-150),
-  "fountainArchFactor": number (0.2-2.0),
-  "fountainBladeLength": number (50-240),
-  "fountainSeedHeadDensity": number (0-100),
-  "maxDepth": number (1-7),
-  "baseAngle": number (10-75),
-  "angleJitter": number (0-1),
-  "lengthRatio": number (0.5-0.88),
-  "taperRatio": number (0.5-0.95),
-  "trunkLength": number (60-250),
-  "trunkThickness": number (3-35),
-  "gravity": number (-1 to 1),
+  "renderTechnique": "botanical_vector" | "architectural_ink" | "blueprint" | "watercolor_wash",
+  "name": "Botanical and Common species name (e.g. Japanese Maple (Acer palmatum))",
+  "description": "Botanical morphology summary",
+  
+  "trunkLength": number (60 to 260),
+  "trunkThickness": number (3 to 45),
+  "rootFlare": number (0.0 to 1.5 - ground root buttress flare spread),
+  "barkFissures": number (0.0 to 1.0 - density of longitudinal bark fissure lines),
+  "windDrift": number (-1.0 to 1.0 - natural wind sway lean),
+  "asymmetry": number (0.0 to 1.0 - biological irregularity),
+
+  "maxDepth": number (1 to 7 - recursion depth for canopy/tower),
+  "baseAngle": number (10 to 75 - branching spread angle in degrees),
+  "angleJitter": number (0.0 to 1.0),
+  "lengthRatio": number (0.5 to 0.88),
+  "taperRatio": number (0.5 to 0.95),
+  "gravity": number (-1.0 to 1.0 - negative for weeping droop, positive for upright),
   "splitsPerNode": number (2 or 3),
-  "foliageType": "deciduous" | "conifer" | "weeping" | "palm" | "broadleaf" | "architectural_circle" | "hatch" | "blade" | "none",
-  "foliageDensity": number (0-100),
-  "foliageSize": number (3-25),
-  "foliageOpacity": number (0.1-1.0),
-  "colorPalette": "emerald" | "maple_red" | "autumn_gold" | "blueprint" | "architectural_monochrome" | "pine_dark" | "bonsai_mint",
-  "lineWeight": number (0.5-4.0),
-  "explanation": "Short 1-2 sentence explanation of the botanical model choices."
+
+  "rosetteLeafCount": number (12 to 70),
+  "rosetteLeafLength": number (40 to 220),
+  "rosetteCurl": number (-1.0 to 1.0),
+  "rosetteLayers": number (1 to 5),
+
+  "spireWidth": number (20 to 180),
+  "spireBranchAngle": number (60 to 88),
+
+  "fountainBladeCount": number (20 to 150),
+  "fountainArchFactor": number (0.2 to 2.0),
+  "fountainBladeLength": number (50 to 240),
+  "fountainSeedHeadDensity": number (0 to 100),
+
+  "foliageType": "deciduous" | "conifer" | "weeping" | "palm" | "broadleaf" | "architectural_circle" | "hatch" | "blade" | "blossom" | "none",
+  "foliageDensity": number (0 to 100),
+  "foliageSize": number (3 to 28),
+  "foliageOpacity": number (0.1 to 1.0),
+  "blossomDensity": number (0 to 100 - flowering blossom density),
+  "blossomColor": string (hex color like "#f472b6" for Sakura or "#ffffff" for Magnolia),
+  
+  "colorPalette": "emerald" | "maple_red" | "autumn_gold" | "cherry_blossom" | "blueprint" | "architectural_monochrome" | "pine_dark" | "bonsai_mint",
+  "lineWeight": number (0.5 to 4.0),
+  "explanation": "Engaging 1-2 sentence explanation of the botanical morphology decisions."
 }`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -74,13 +95,13 @@ You must return ONLY a JSON object matching this schema:
             role: 'user',
             parts: [
               {
-                text: `${systemPrompt}\n\nUser Request: "${prompt}"\nCurrent Plant Config ID: "${currentConfig?.id || 'default'}"`,
+                text: `${systemPrompt}\n\nUser Request: "${prompt}"\nCurrent Botanical Specimen: "${currentConfig?.name || 'Default'}"`,
               },
             ],
           },
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.75,
           responseMimeType: 'application/json',
         },
       }),
@@ -107,8 +128,8 @@ You must return ONLY a JSON object matching this schema:
     return NextResponse.json({
       success: true,
       config: parsedConfig,
-      explanation: parsedConfig.explanation || `Customized botanical symbol based on prompt: "${prompt}".`,
-      source: 'gemini-2.0-flash',
+      explanation: parsedConfig.explanation || `Crafted custom botanical model for "${prompt}".`,
+      source: 'Gemini 2.0 Botanical Architect',
     });
   } catch (error: any) {
     console.error('Error in translate API route:', error);
