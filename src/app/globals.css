@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #0b0f19;
+    --bg-surface: #111827;
+    --bg-card: #1f293d;
+    --border-color: #2e3a52;
+    --accent-green: #10b981;
+    --accent-emerald: #059669;
+    --accent-cyan: #06b6d4;
+    --accent-blueprint: #2563eb;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --cad-grid-line: rgba(255, 255, 255, 0.05);
+    --cad-major-line: rgba(59, 130, 246, 0.15);
+  }
+
+  .theme-light {
+    --bg-primary: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-card: #f1f5f9;
+    --border-color: #e2e8f0;
+    --accent-green: #059669;
+    --accent-emerald: #047857;
+    --accent-cyan: #0891b2;
+    --accent-blueprint: #1d4ed8;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --cad-grid-line: rgba(0, 0, 0, 0.04);
+    --cad-major-line: rgba(37, 99, 235, 0.12);
+  }
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow: hidden;
+}
+
+/* CAD Drafting Grid Background Pattern */
+.cad-grid-pattern {
+  background-size: 20px 20px, 100px 100px;
+  background-image: 
+    linear-gradient(to right, var(--cad-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cad-grid-line) 1px, transparent 1px),
+    linear-gradient(to right, var(--cad-major-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cad-major-line) 1px, transparent 1px);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
