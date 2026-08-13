@@ -11,18 +11,18 @@ interface DualViewportProps {
 export const DualViewport: React.FC<DualViewportProps> = ({ plantConfig }) => {
   return (
     <div className="flex-1 h-full w-full grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border-color)] overflow-hidden">
-      {/* Viewport 1: Front Elevation */}
+      {/* Viewport 1 (Left): Top / Plan View */}
       <PlantCanvas
         plantConfig={plantConfig}
-        viewMode="front"
-        title="Viewport 1: Front Elevation"
+        viewMode="plan"
+        title="Viewport 1: Top / Plan View"
       />
 
-      {/* Viewport 2: Side View / Plan View */}
+      {/* Viewport 2 (Right): Side Elevation View */}
       <PlantCanvas
         plantConfig={plantConfig}
         viewMode="side"
-        title="Viewport 2: Side Profile View"
+        title="Viewport 2: Side Elevation View"
       />
     </div>
   );
